@@ -1,58 +1,34 @@
 package com.gildedrose
 
+import com.gildedrose.ItemName._
+
+
 class GildedRose(val items: Array[Item]) {
-
-
-  def updateQuality() {
-    for (i <- 0 until items.length) {
-      if (!items(i).name.equals("Aged Brie")
-        && !items(i).name.equals("Backstage passes to a TAFKAL80ETC concert")) {
-        if (items(i).quality > 0) {
-          if (!items(i).name.equals("Sulfuras, Hand of Ragnaros")) {
-            items(i).quality = items(i).quality - 1
+  def updateQuality(): Unit = {
+    items.foreach(item => {
+      val itemName = ItemName.itemName(item.name)
+      item.quality += (itemName match {
+        case AgedBrie => 1
+        case Backstagepass =>
+          item.sellIn match {
+            case i if i <= 10 && i > 5 => 2
+            case i if i <= 5 && i > 0 => 3
+            case i if i <= 0 => -item.quality
+            case _ => -1
           }
+        case Other => if (item.sellIn <= 0) -2 else -1
+        case Conjured => if (item.sellIn <= 0) -4 else -2
+        case Sulfuras => 0
+      })
+      if (itemName != Sulfuras) {
+        item.sellIn -= 1
+        if (item.quality > 50) {
+          item.quality = 50
         }
-      } else {
-        if (items(i).quality < 50) {
-          items(i).quality = items(i).quality + 1
-
-          if (items(i).name.equals("Backstage passes to a TAFKAL80ETC concert")) {
-            if (items(i).sellIn < 11) {
-              if (items(i).quality < 50) {
-                items(i).quality = items(i).quality + 1
-              }
-            }
-
-            if (items(i).sellIn < 6) {
-              if (items(i).quality < 50) {
-                items(i).quality = items(i).quality + 1
-              }
-            }
-          }
+        if (item.quality < 0) {
+          item.quality = 0
         }
       }
-
-      if (!items(i).name.equals("Sulfuras, Hand of Ragnaros")) {
-        items(i).sellIn = items(i).sellIn - 1
-      }
-
-      if (items(i).sellIn < 0) {
-        if (!items(i).name.equals("Aged Brie")) {
-          if (!items(i).name.equals("Backstage passes to a TAFKAL80ETC concert")) {
-            if (items(i).quality > 0) {
-              if (!items(i).name.equals("Sulfuras, Hand of Ragnaros")) {
-                items(i).quality = items(i).quality - 1
-              }
-            }
-          } else {
-            items(i).quality = items(i).quality - items(i).quality
-          }
-        } else {
-          if (items(i).quality < 50) {
-            items(i).quality = items(i).quality + 1
-          }
-        }
-      }
-    }
+    })
   }
 }
